@@ -207,3 +207,36 @@ test('Should call valueOf internally', (t, done) => {
     done()
   })
 })
+
+test('should resolve schemas flagged only with isFluentJSONSchema', async (t) => {
+  t.plan(2)
+  const fastify = Fastify()
+
+  const rawBody = {
+    type: 'object',
+    required: ['name'],
+    properties: { name: { type: 'string' } }
+  }
+  const bodySchema = {
+    isFluentJSONSchema: true,
+    valueOf () { return rawBody }
+  }
+
+  fastify.post('/', {
+    schema: { body: bodySchema },
+    handler: (req, reply) => reply.send({ ok: true })
+  })
+
+  const res = await fastify.inject({
+    method: 'POST',
+    url: '/',
+    payload: {}
+  })
+  t.assert.strictEqual(res.statusCode, 400)
+  t.assert.deepStrictEqual(res.json(), {
+    statusCode: 400,
+    code: 'FST_ERR_VALIDATION',
+    error: 'Bad Request',
+    message: "body must have required property 'name'"
+  })
+})
