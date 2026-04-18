@@ -141,6 +141,14 @@ test('Fastify.initialConfig should expose all options', t => {
   t.assert.strictEqual(fastify.initialConfig.trustProxy, undefined)
 })
 
+test('keepAliveTimeout: 0 should be preserved (not replaced by default)', t => {
+  t.plan(2)
+
+  const fastify = Fastify({ keepAliveTimeout: 0 })
+  t.assert.strictEqual(fastify.initialConfig.keepAliveTimeout, 0)
+  t.assert.strictEqual(fastify.server.keepAliveTimeout, 0)
+})
+
 test('Should throw if you try to modify Fastify.initialConfig', t => {
   t.plan(4)
 
